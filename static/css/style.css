@@ -662,3 +662,79 @@ input[type="month"][readonly]::-webkit-calendar-picker-indicator {
     font-weight: 600;
 }
 
+/* Confirm Create Table Modal Styling */
+#confirmCreateTableModal .modal-content {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+#confirmCreateTableModal .modal-header {
+    border-bottom: none;
+}
+
+#confirmCreateTableModal .modal-body {
+    background: #f8f9fa;
+}
+
+#confirmCreateTableModal .modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+}
+
+#confirmCreateTableModal .btn-primary {
+    background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+    border: none;
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+}
+
+#confirmCreateTableModal .btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-orange-dark) 0%, #FF7A3D 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 154, 86, 0.3);
+}
+
+#confirmCreateTableModal .btn-secondary {
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+}
+
+/* Confirm Fixing Modal Styling */
+#confirmFixingModal .modal-content {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+#confirmFixingModal .modal-header {
+    border-bottom: none;
+}
+
+#confirmFixingModal .modal-body {
+    background: #fffbf0;
+}
+
+#confirmFixingModal .modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+}
+
+#confirmFixingModal .btn-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+    border: none;
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    color: #000;
+}
+
+#confirmFixingModal .btn-warning:hover {
+    background: linear-gradient(135deg, #ffb300 0%, #ffa000 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    color: #000;
+}
+
+#confirmFixingModal .btn-secondary {
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+}
+

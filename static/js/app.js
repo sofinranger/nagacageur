@@ -478,6 +478,7 @@ document.getElementById('checkSaldoBtn').addEventListener('click', async functio
     // Hide previous results
     document.getElementById('checkResultsSection').style.display = 'none';
     document.getElementById('fixingButtonContainer').style.display = 'none';
+    document.getElementById('creatingButtonContainer').style.display = 'none';
     document.getElementById('fixProgressSection').style.display = 'none';
     
     // Get form data
@@ -515,6 +516,17 @@ document.getElementById('checkSaldoBtn').addEventListener('click', async functio
             document.getElementById('startFixingBtn').dataset.monthlyTable = result.monthlyTable;
             
             messageDiv.className = 'alert alert-warning';
+        } else if (result.success && result.needsCreating) {
+            // Show create table button
+            document.getElementById('creatingButtonContainer').style.display = 'block';
+            document.getElementById('createTableName').textContent = result.monthlyTable;
+            document.getElementById('createTableName2').textContent = result.monthlyTable;
+            
+            // Store data for creating
+            document.getElementById('startCreatingBtn').dataset.checkDate = result.checkDate;
+            document.getElementById('startCreatingBtn').dataset.monthlyTable = result.monthlyTable;
+            
+            messageDiv.className = 'alert alert-warning';
         } else if (result.success) {
             messageDiv.className = 'alert alert-success';
         } else {
@@ -530,18 +542,29 @@ document.getElementById('checkSaldoBtn').addEventListener('click', async functio
     }
 });
 
-// Start Fixing Button
-document.getElementById('startFixingBtn').addEventListener('click', async function() {
-    const btn = this;
+// Start Fixing Button - Show Confirmation Modal
+document.getElementById('startFixingBtn').addEventListener('click', function() {
+    const checkDate = this.dataset.checkDate;
+    const monthlyTable = this.dataset.monthlyTable;
     
-    // Confirm action
+    // Update modal content
+    document.getElementById('modalCheckDate').textContent = checkDate;
+    document.getElementById('modalMonthlyTable').textContent = monthlyTable;
+    
+    // Show modal
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmFixingModal'));
+    confirmModal.show();
+});
+
+// Confirm Fixing Button - Execute Fixing
+document.getElementById('confirmFixingBtn').addEventListener('click', async function() {
+    // Close the confirmation modal
+    const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmFixingModal'));
+    confirmModal.hide();
+    
+    const btn = document.getElementById('startFixingBtn');
     const checkDate = btn.dataset.checkDate;
     const monthlyTable = btn.dataset.monthlyTable;
-    
-    if (!confirm(`Are you sure you want to move data from th_barang_saldo (period ${checkDate}) to ${monthlyTable}?\n\nThis action will DELETE the original data and CANNOT be undone!`)) {
-        return;
-    }
-    
     const originalHTML = btn.innerHTML;
     
     // Disable button and show loading
@@ -597,6 +620,94 @@ document.getElementById('startFixingBtn').addEventListener('click', async functi
         progressMessage.innerHTML = `<i class="bi bi-x-circle-fill me-2"></i>Error: ${error.message}`;
         
         showAlert('Fixing failed: ' + error.message, 'danger');
+    } finally {
+        // Re-enable button
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+});
+
+
+// Start Creating Table Button - Show Confirmation Modal
+document.getElementById('startCreatingBtn').addEventListener('click', function() {
+    const monthlyTable = this.dataset.monthlyTable;
+    
+    // Update modal content
+    document.getElementById('modalCreateTableName').textContent = monthlyTable;
+    
+    // Show modal
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmCreateTableModal'));
+    confirmModal.show();
+});
+
+// Confirm Create Table Button - Execute Creation
+document.getElementById('confirmCreateTableBtn').addEventListener('click', async function() {
+    // Close the confirmation modal
+    const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmCreateTableModal'));
+    confirmModal.hide();
+    
+    const btn = document.getElementById('startCreatingBtn');
+    const checkDate = btn.dataset.checkDate;
+    const monthlyTable = btn.dataset.monthlyTable;
+    const originalHTML = btn.innerHTML;
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+    
+    // Show progress section
+    document.getElementById('fixProgressSection').style.display = 'block';
+    document.getElementById('fixProgressMessage').innerHTML = '<i class="bi bi-hourglass-split"></i> Creating table... Please wait...';
+    
+    // Get form data
+    const formData = {
+        host: document.getElementById('host2').value,
+        user: document.getElementById('user2').value,
+        password: document.getElementById('password2').value,
+        database: document.getElementById('database2').value,
+        checkDate: checkDate,
+        monthlyTable: monthlyTable
+    };
+    
+    try {
+        const response = await fetch('/create-table-saldo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        const progressMessage = document.getElementById('fixProgressMessage');
+        
+        if (result.success) {
+            progressMessage.className = 'alert alert-success';
+            progressMessage.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>${result.message}`;
+            
+            // Hide creating button after success
+            document.getElementById('creatingButtonContainer').style.display = 'none';
+            
+            // Update check results message
+            document.getElementById('checkResultsMessage').className = 'alert alert-success';
+            document.getElementById('checkResultsMessage').innerHTML = `✓ Table ${monthlyTable} has been created successfully! You can now check again to verify.`;
+            
+            // Show success alert
+            showAlert(result.message, 'success');
+        } else {
+            progressMessage.className = 'alert alert-danger';
+            progressMessage.innerHTML = `<i class="bi bi-x-circle-fill me-2"></i>${result.message}`;
+            
+            showAlert(result.message, 'danger');
+        }
+        
+    } catch (error) {
+        const progressMessage = document.getElementById('fixProgressMessage');
+        progressMessage.className = 'alert alert-danger';
+        progressMessage.innerHTML = `<i class="bi bi-x-circle-fill me-2"></i>Error: ${error.message}`;
+        
+        showAlert('Creating table failed: ' + error.message, 'danger');
     } finally {
         // Re-enable button
         btn.disabled = false;
@@ -706,20 +817,32 @@ document.getElementById('confirmAuditBtn').addEventListener('click', async funct
                             btn.innerHTML = originalHTML;
                             return;
                         } else if (data.type === 'progress') {
-                            if (data.step === 'query') {
+                            // Handle different progress steps
+                            if (data.step === 'query' || data.step === 'query_phase2') {
+                                const percent = data.step === 'query' ? 5 : 50;
+                                progressBar.style.width = percent + '%';
+                                progressText.textContent = percent + '%';
+                                progressStatus.textContent = data.message;
+                            } else if (data.step === 'start_phase1') {
                                 progressBar.style.width = '10%';
                                 progressText.textContent = '10%';
                                 progressStatus.textContent = data.message;
-                            } else if (data.step === 'start') {
-                                progressBar.style.width = '15%';
-                                progressText.textContent = '15%';
-                                progressStatus.textContent = data.message;
-                            } else if (data.step === 'processing') {
-                                // Real-time update per item
-                                const percent = Math.min(15 + Math.round((data.current / data.total) * 80), 95);
+                            } else if (data.step === 'processing_phase1') {
+                                // Phase 1: 10% - 50%
+                                const percent = Math.min(10 + Math.round((data.current / data.total) * 40), 50);
                                 progressBar.style.width = percent + '%';
                                 progressText.textContent = percent + '%';
-                                progressStatus.textContent = `Processing item ${data.current} of ${data.total}: ${data.kode_barang}`;
+                                progressStatus.textContent = data.message || `Phase 1: ${data.current}/${data.total} - ${data.kode_barang}`;
+                            } else if (data.step === 'start_phase2') {
+                                progressBar.style.width = '55%';
+                                progressText.textContent = '55%';
+                                progressStatus.textContent = data.message;
+                            } else if (data.step === 'processing_phase2') {
+                                // Phase 2: 55% - 95%
+                                const percent = Math.min(55 + Math.round((data.current / data.total) * 40), 95);
+                                progressBar.style.width = percent + '%';
+                                progressText.textContent = percent + '%';
+                                progressStatus.textContent = data.message || `Phase 2: ${data.current}/${data.total} - ${data.kode_barang}`;
                             }
                         } else if (data.type === 'complete') {
                             // Audit completed
@@ -729,14 +852,38 @@ document.getElementById('confirmAuditBtn').addEventListener('click', async funct
                             
                             console.log('[AUDIT] Complete! Summary:', data.summary);
                             
-                            // Update summary cards
-                            document.getElementById('summaryTmBarang').textContent = data.summary.total_tm_barang.toLocaleString();
-                            document.getElementById('summaryMatchTmToTt').textContent = data.summary.match_tm_to_tt.toLocaleString();
-                            document.getElementById('summaryNotFound').textContent = data.summary.not_found.toLocaleString();
-                            document.getElementById('summaryDuplicate').textContent = data.summary.duplicate.toLocaleString();
+                            // Update Phase 1 summary cards
+                            document.getElementById('summaryTmBarang').textContent = data.summary.phase1.total_tm_barang.toLocaleString();
+                            document.getElementById('summaryMatchTmToTt').textContent = data.summary.phase1.match_tm_to_tt.toLocaleString();
+                            document.getElementById('summaryNotFoundTmToTt').textContent = data.summary.phase1.not_found.toLocaleString();
+                            document.getElementById('summaryDuplicateTmToTt').textContent = data.summary.phase1.duplicate.toLocaleString();
+                            
+                            // Update Phase 2 summary cards
+                            document.getElementById('summaryTtBarang').textContent = data.summary.phase2.total_tt_barang.toLocaleString();
+                            document.getElementById('summaryMatchTtToTm').textContent = data.summary.phase2.match_tt_to_tm.toLocaleString();
+                            document.getElementById('summaryNotFoundTtToTm').textContent = data.summary.phase2.not_found.toLocaleString();
+                            document.getElementById('summaryDuplicateTtToTm').textContent = data.summary.phase2.duplicate.toLocaleString();
+                            
+                            // Update total issues count
+                            document.getElementById('totalIssuesCount').textContent = data.summary.total_issues.toLocaleString();
                             
                             // Display issues in table
                             displayAuditResults(data.issues);
+                            
+                            // Store issues globally for fixing
+                            window.auditIssues = data.issues;
+                            window.auditFormData = formData;
+                            
+                            // Show/hide fix button based on fixable issues
+                            const fixableIssues = data.issues.filter(issue => 
+                                issue.issue === 'TM_DUPLICATE_IN_TT' || issue.issue === 'TM_NOT_IN_TT'
+                            );
+                            
+                            if (fixableIssues.length > 0) {
+                                document.getElementById('fixIssuesSection').style.display = 'block';
+                            } else {
+                                document.getElementById('fixIssuesSection').style.display = 'none';
+                            }
                             
                             // Hide progress, show results
                             setTimeout(() => {
@@ -746,7 +893,7 @@ document.getElementById('confirmAuditBtn').addEventListener('click', async funct
                                 // Show summary alert
                                 const totalIssues = data.summary.total_issues;
                                 if (totalIssues === 0) {
-                                    showAlert('✓ Audit completed! No issues found. All data is consistent.', 'success');
+                                    showAlert('✓ Audit completed! No issues found. All data is consistent in both directions.', 'success');
                                 } else {
                                     showAlert(`⚠ Audit completed! Found ${totalIssues} issue(s). Please review the results below.`, 'warning');
                                 }
@@ -809,8 +956,16 @@ function displayAuditResults(issues) {
     issues.forEach((issue, index) => {
         let badgeClass = '';
         let badgeText = '';
+        let countValue = issue.count_tt || issue.count_tm || 0;
         
-        if (issue.issue === 'NOT_FOUND') {
+        // Determine badge style based on issue type
+        if (issue.issue === 'TM_NOT_IN_TT' || issue.issue === 'TT_NOT_IN_TM') {
+            badgeClass = 'badge-danger';
+            badgeText = issue.issue === 'TM_NOT_IN_TT' ? 'TM NOT IN TT' : 'TT NOT IN TM';
+        } else if (issue.issue === 'TM_DUPLICATE_IN_TT' || issue.issue === 'TT_DUPLICATE_IN_TM') {
+            badgeClass = 'badge-warning';
+            badgeText = issue.issue === 'TM_DUPLICATE_IN_TT' ? 'TM DUP IN TT' : 'TT DUP IN TM';
+        } else if (issue.issue === 'NOT_FOUND') {
             badgeClass = 'badge-danger';
             badgeText = 'NOT FOUND';
         } else if (issue.issue === 'DUPLICATE') {
@@ -823,7 +978,7 @@ function displayAuditResults(issues) {
                 <td>${index + 1}</td>
                 <td><code>${issue.kode_barang}</code></td>
                 <td><code>${issue.kode_lokasi}</code></td>
-                <td class="text-center">${issue.count_tt}</td>
+                <td class="text-center">${countValue}</td>
                 <td>
                     <span class="badge ${badgeClass}">${badgeText}</span>
                     <br>
@@ -835,3 +990,166 @@ function displayAuditResults(issues) {
         tableBody.innerHTML += row;
     });
 }
+// Fix Issues Button - Show Confirmation Modal
+document.getElementById('fixIssuesBtn').addEventListener('click', function() {
+    const fixableIssues = window.auditIssues.filter(issue => 
+        issue.issue === 'TM_DUPLICATE_IN_TT' || issue.issue === 'TM_NOT_IN_TT'
+    );
+    
+    // Update modal with total fixable issues
+    document.getElementById('modalTotalIssues').textContent = fixableIssues.length;
+    
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmFixSmartAuditModal'));
+    confirmModal.show();
+});
+
+// Confirm Fix Smart Audit Button - Execute Fixing
+document.getElementById('confirmFixSmartAuditBtn').addEventListener('click', async function() {
+    // Close the confirmation modal
+    const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmFixSmartAuditModal'));
+    confirmModal.hide();
+    
+    const btn = document.getElementById('fixIssuesBtn');
+    const originalHTML = btn.innerHTML;
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Fixing...';
+    
+    clearAlerts();
+    
+    // Show fixing progress section
+    document.getElementById('fixingProgressSection').style.display = 'block';
+    document.getElementById('fixingResultsSection').style.display = 'none';
+    
+    const progressBar = document.getElementById('fixingProgressBar');
+    const progressText = document.getElementById('fixingProgressText');
+    const progressStatus = document.getElementById('fixingProgressStatus');
+    
+    progressBar.style.width = '0%';
+    progressText.textContent = '0%';
+    progressStatus.textContent = 'Starting fix process...';
+    
+    // Prepare request data
+    const requestData = {
+        host: window.auditFormData.host,
+        user: window.auditFormData.user,
+        password: window.auditFormData.password,
+        database: window.auditFormData.database,
+        issues: window.auditIssues
+    };
+    
+    try {
+        // Use fetch with streaming response
+        const response = await fetch('/fix-smart-audit-stream', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        
+        while (true) {
+            const {done, value} = await reader.read();
+            
+            if (done) break;
+            
+            buffer += decoder.decode(value, {stream: true});
+            
+            // Process complete messages (separated by double newlines)
+            let lines = buffer.split('\n\n');
+            buffer = lines.pop(); // Keep the incomplete line in the buffer
+            
+            for (let line of lines) {
+                if (line.startsWith('data: ')) {
+                    const jsonStr = line.substring(6);
+                    try {
+                        const data = JSON.parse(jsonStr);
+                        console.log('[FIXING] Received:', data);
+                        
+                        if (data.error) {
+                            // Error occurred
+                            document.getElementById('fixingProgressSection').style.display = 'none';
+                            showAlert(data.message, 'danger');
+                            btn.disabled = false;
+                            btn.innerHTML = originalHTML;
+                            return;
+                        } else if (data.type === 'progress') {
+                            // Handle different progress steps
+                            if (data.step === 'start') {
+                                progressBar.style.width = '5%';
+                                progressText.textContent = '5%';
+                                progressStatus.textContent = data.message;
+                            } else if (data.step === 'fixing_duplicates') {
+                                progressBar.style.width = '10%';
+                                progressText.textContent = '10%';
+                                progressStatus.textContent = data.message;
+                            } else if (data.step === 'inserting_missing') {
+                                progressBar.style.width = '50%';
+                                progressText.textContent = '50%';
+                                progressStatus.textContent = data.message;
+                            } else if (data.step === 'processing') {
+                                progressBar.style.width = data.percent + '%';
+                                progressText.textContent = data.percent + '%';
+                                progressStatus.textContent = data.message;
+                            }
+                        } else if (data.type === 'warning') {
+                            // Warning during processing
+                            console.warn('[FIXING]', data.message);
+                        } else if (data.type === 'complete') {
+                            // Fixing completed
+                            progressBar.style.width = '100%';
+                            progressText.textContent = '100%';
+                            progressStatus.textContent = 'Fixing completed!';
+                            
+                            console.log('[FIXING] Complete! Result:', data.result);
+                            
+                            // Update fixing results display
+                            document.getElementById('duplicatesDeleted').textContent = data.result.duplicates_deleted.toLocaleString();
+                            document.getElementById('missingInserted').textContent = data.result.missing_inserted.toLocaleString();
+                            document.getElementById('totalFixed').textContent = data.result.total_fixed.toLocaleString();
+                            
+                            // Hide progress, show results
+                            setTimeout(() => {
+                                document.getElementById('fixingProgressSection').style.display = 'none';
+                                document.getElementById('fixingResultsSection').style.display = 'block';
+                                
+                                // Show success alert
+                                showAlert(`✓ Fixing completed! ${data.result.total_fixed} issue(s) fixed successfully. (Duplicates deleted: ${data.result.duplicates_deleted}, Missing inserted: ${data.result.missing_inserted})`, 'success');
+                                
+                                // Hide fix button after successful fix
+                                document.getElementById('fixIssuesSection').style.display = 'none';
+                                
+                                // Re-enable button
+                                btn.disabled = false;
+                                btn.innerHTML = originalHTML;
+                            }, 500);
+                            
+                            return;
+                        } else if (data.type === 'error') {
+                            // Error during processing
+                            document.getElementById('fixingProgressSection').style.display = 'none';
+                            showAlert(data.message, 'danger');
+                            btn.disabled = false;
+                            btn.innerHTML = originalHTML;
+                            return;
+                        }
+                    } catch (parseError) {
+                        console.error('[FIXING] Parse error:', parseError, 'Data:', jsonStr);
+                    }
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('[FIXING] Fetch error:', error);
+        document.getElementById('fixingProgressSection').style.display = 'none';
+        showAlert('Connection error during fixing: ' + error.message, 'danger');
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+});

@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NagaCageur - Database Maintenance Tool</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
@@ -410,6 +414,24 @@
                                                 and delete the original data. This action cannot be undone!
                                             </div>
                                         </div>
+                                        
+                                        <!-- Creating Button (only shown when table doesn't exist) -->
+                                        <div id="creatingButtonContainer" style="display: none;">
+                                            <div class="d-grid gap-2">
+                                                <button type="button" 
+                                                        class="btn btn-primary btn-lg" 
+                                                        id="startCreatingBtn">
+                                                    <i class="bi bi-plus-circle me-2"></i>
+                                                    CREATE TABLE - <span id="createTableName"></span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="alert alert-info mt-3" role="alert">
+                                                <i class="bi bi-info-circle-fill me-2"></i>
+                                                <strong>Info:</strong> This will create table <code id="createTableName2"></code> 
+                                                with the same structure as <code>th_barang_saldo</code>. The table will be empty after creation.
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <!-- Fix Progress Section -->
@@ -547,47 +569,101 @@
                                             Audit Results
                                         </h5>
                                         
-                                        <!-- Summary Cards -->
-                                        <div class="row g-3 mb-4">
+                                        <!-- Phase 1 Summary: TM → TT -->
+                                        <h6 class="text-muted mb-3">
+                                            <i class="bi bi-arrow-right-circle me-2"></i>
+                                            Phase 1: tm_barang → tt_barang_saldo
+                                        </h6>
+                                        <div class="row g-2 mb-4">
                                             <div class="col-md-3">
-                                                <div class="card text-center">
-                                                    <div class="card-body">
-                                                        <h6 class="text-muted mb-2">Total tm_barang</h6>
-                                                        <h3 class="mb-0 text-primary" id="summaryTmBarang">0</h3>
-                                                        <small class="text-muted">TOKO, stock > 0</small>
+                                                <div class="card text-center border-primary">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Total tm_barang</small>
+                                                        <h4 class="mb-0 text-primary" id="summaryTmBarang">0</h4>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <div class="card text-center">
-                                                    <div class="card-body">
-                                                        <h6 class="text-muted mb-2">Match</h6>
-                                                        <h3 class="mb-0 text-success" id="summaryMatchTmToTt">0</h3>
-                                                        <small class="text-muted">Found in tt_barang_saldo</small>
+                                                <div class="card text-center border-success">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Match TM→TT</small>
+                                                        <h4 class="mb-0 text-success" id="summaryMatchTmToTt">0</h4>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <div class="card text-center">
-                                                    <div class="card-body">
-                                                        <h6 class="text-muted mb-2">Not Found</h6>
-                                                        <h3 class="mb-0 text-danger" id="summaryNotFound">0</h3>
-                                                        <small class="text-muted">Missing in tt_barang_saldo</small>
+                                                <div class="card text-center border-danger">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Not Found</small>
+                                                        <h4 class="mb-0 text-danger" id="summaryNotFoundTmToTt">0</h4>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <div class="card text-center">
-                                                    <div class="card-body">
-                                                        <h6 class="text-muted mb-2">Duplicate</h6>
-                                                        <h3 class="mb-0 text-warning" id="summaryDuplicate">0</h3>
-                                                        <small class="text-muted">Multiple Records</small>
+                                                <div class="card text-center border-warning">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Duplicate</small>
+                                                        <h4 class="mb-0 text-warning" id="summaryDuplicateTmToTt">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Phase 2 Summary: TT → TM -->
+                                        <h6 class="text-muted mb-3">
+                                            <i class="bi bi-arrow-left-circle me-2"></i>
+                                            Phase 2: tt_barang_saldo → tm_barang
+                                        </h6>
+                                        <div class="row g-2 mb-4">
+                                            <div class="col-md-3">
+                                                <div class="card text-center border-primary">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Total tt_barang</small>
+                                                        <h4 class="mb-0 text-primary" id="summaryTtBarang">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card text-center border-success">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Match TT→TM</small>
+                                                        <h4 class="mb-0 text-success" id="summaryMatchTtToTm">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card text-center border-danger">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Not Found</small>
+                                                        <h4 class="mb-0 text-danger" id="summaryNotFoundTtToTm">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card text-center border-warning">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Duplicate</small>
+                                                        <h4 class="mb-0 text-warning" id="summaryDuplicateTtToTm">0</h4>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         
                                         <!-- Detailed Results Table -->
+                                        <h6 class="text-muted mb-3">
+                                            <i class="bi bi-table me-2"></i>
+                                            Detailed Issues (<span id="totalIssuesCount">0</span>)
+                                        </h6>
+                                        
+                                        <!-- Fix Issues Button -->
+                                        <div class="mb-3" id="fixIssuesSection" style="display: none;">
+                                            <button type="button" 
+                                                    class="btn btn-warning btn-lg w-100" 
+                                                    id="fixIssuesBtn">
+                                                <i class="bi bi-wrench me-2"></i> FIX ISSUES
+                                            </button>
+                                        </div>
+                                        
                                         <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                                             <table class="table table-sm table-hover">
                                                 <thead class="sticky-top" style="background: linear-gradient(135deg, #FF9A56 0%, #FF8C42 100%); color: white;">
@@ -595,7 +671,7 @@
                                                         <th width="40">#</th>
                                                         <th>Kode Barang</th>
                                                         <th>Kode Lokasi</th>
-                                                        <th>Count tt_saldo</th>
+                                                        <th>Count</th>
                                                         <th>Issue</th>
                                                     </tr>
                                                 </thead>
@@ -603,6 +679,66 @@
                                                     <!-- Issues will be loaded here -->
                                                 </tbody>
                                             </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Fixing Progress Section -->
+                                    <div class="mb-4" id="fixingProgressSection" style="display: none;">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="bi bi-gear-fill text-warning"></i> 
+                                            Fixing Progress
+                                        </h5>
+                                        
+                                        <div class="progress mb-3" style="height: 30px;">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
+                                                 role="progressbar" 
+                                                 id="fixingProgressBar"
+                                                 style="width: 0%"
+                                                 aria-valuenow="0" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                <span class="fw-bold" id="fixingProgressText">0%</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="alert alert-warning" id="fixingProgressMessage">
+                                            <i class="bi bi-gear me-2"></i>
+                                            <span id="fixingProgressStatus">Initializing fix...</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Fixing Results Section -->
+                                    <div class="mb-4" id="fixingResultsSection" style="display: none;">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="bi bi-check-circle text-success"></i> 
+                                            Fixing Results
+                                        </h5>
+                                        
+                                        <div class="row g-2">
+                                            <div class="col-md-4">
+                                                <div class="card text-center border-danger">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Duplicates Deleted</small>
+                                                        <h4 class="mb-0 text-danger" id="duplicatesDeleted">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card text-center border-success">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Missing Inserted</small>
+                                                        <h4 class="mb-0 text-success" id="missingInserted">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card text-center border-primary">
+                                                    <div class="card-body p-2">
+                                                        <small class="text-muted d-block">Total Fixed</small>
+                                                        <h4 class="mb-0 text-primary" id="totalFixed">0</h4>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -634,6 +770,143 @@
         </div>
     </div>
     
+    <!-- Confirm Create Table Modal -->
+    <div class="modal fade" id="confirmCreateTableModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #FF9A56 0%, #FF8C42 100%);">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Create Monthly Table?
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-3"><strong>You are about to create table:</strong></p>
+                    <div class="alert alert-primary mb-3">
+                        <i class="bi bi-table me-2"></i>
+                        <code id="modalCreateTableName" class="text-dark">th_barang_saldo_YYYYMM</code>
+                    </div>
+                    <p class="mb-3"><strong>What will happen:</strong></p>
+                    <ul class="list-unstyled mb-3">
+                        <li class="mb-2">
+                            <i class="bi bi-1-circle-fill text-primary me-2"></i>
+                            Create new table with same structure as <code>th_barang_saldo</code>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-2-circle-fill text-info me-2"></i>
+                            Table will be empty after creation
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-3-circle-fill text-success me-2"></i>
+                            Ready for data migration from main table
+                        </li>
+                    </ul>
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>After creating the table, you can check again to verify and move data.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirmCreateTableBtn">
+                        <i class="bi bi-check-circle me-2"></i>Yes, Create Table
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirm Fixing Modal -->
+    <div class="modal fade" id="confirmFixingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header text-white bg-warning">
+                    <h5 class="modal-title text-dark">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Start Fixing Data?
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-3"><strong>You are about to:</strong></p>
+                    <ul class="list-unstyled mb-3">
+                        <li class="mb-2">
+                            <i class="bi bi-1-circle-fill text-primary me-2"></i>
+                            <strong>COPY</strong> data from <code>th_barang_saldo</code> (period: <span id="modalCheckDate">YYYY-MM</span>)
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-2-circle-fill text-warning me-2"></i>
+                            <strong>INSERT</strong> into monthly table <code id="modalMonthlyTable">th_barang_saldo_YYYYMM</code>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-3-circle-fill text-danger me-2"></i>
+                            <strong>DELETE</strong> original data from <code>th_barang_saldo</code>
+                        </li>
+                    </ul>
+                    <div class="alert alert-danger mb-0">
+                        <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                        <strong>WARNING:</strong> This action will DELETE the original data and <strong>CANNOT be undone!</strong>
+                        <br>
+                        <small>Make sure you have a backup before proceeding.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-warning" id="confirmFixingBtn">
+                        <i class="bi bi-check-circle me-2"></i>Yes, Start Fixing
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirm Fix Smart Audit Modal -->
+    <div class="modal fade" id="confirmFixSmartAuditModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header text-white bg-warning">
+                    <h5 class="modal-title text-dark">
+                        <i class="bi bi-wrench me-2"></i>
+                        Fix Smart Audit Issues?
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-3"><strong>This action will:</strong></p>
+                    <ul class="list-unstyled mb-3">
+                        <li class="mb-2">
+                            <i class="bi bi-1-circle-fill text-danger me-2"></i>
+                            <strong>DELETE</strong> duplicate records in <code>tt_barang_saldo</code> (keep only 1)
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-2-circle-fill text-success me-2"></i>
+                            <strong>INSERT</strong> missing data from <code>tm_barang</code> to <code>tt_barang_saldo</code>
+                        </li>
+                    </ul>
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Total issues to fix:</strong> <span id="modalTotalIssues" class="fw-bold">0</span>
+                        <br>
+                        <small class="text-muted">Only Phase 1 issues (TM→TT) will be fixed automatically.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-warning" id="confirmFixSmartAuditBtn">
+                        <i class="bi bi-check-circle me-2"></i>Yes, Fix Issues
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Confirm Audit Modal -->
     <div class="modal fade" id="confirmAuditModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -649,12 +922,23 @@
                     <p class="mb-3"><strong>This will check tm_barang vs tt_barang_saldo:</strong></p>
                     <ul class="list-unstyled mb-3">
                         <li class="mb-2">
-                            <i class="bi bi-1-circle-fill text-danger me-2"></i>
-                            <strong>Missing records</strong> (NOT_FOUND)
+                            <i class="bi bi-arrow-right-circle text-primary me-2"></i>
+                            <strong>Phase 1:</strong> Check tm_barang → tt_barang_saldo
                         </li>
                         <li class="mb-2">
-                            <i class="bi bi-2-circle-fill text-warning me-2"></i>
-                            <strong>Duplicate records</strong> (DUPLICATE)
+                            <i class="bi bi-arrow-left-circle text-info me-2"></i>
+                            <strong>Phase 2:</strong> Check tt_barang_saldo → tm_barang
+                        </li>
+                    </ul>
+                    <p class="mb-3"><small><strong>Issues detected:</strong></small></p>
+                    <ul class="list-unstyled mb-3" style="font-size: 0.9rem;">
+                        <li class="mb-1">
+                            <i class="bi bi-x-circle text-danger me-2"></i>
+                            Missing records (NOT_FOUND)
+                        </li>
+                        <li class="mb-1">
+                            <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                            Duplicate records (DUPLICATE)
                         </li>
                     </ul>
                     <div class="alert alert-info mb-0">
