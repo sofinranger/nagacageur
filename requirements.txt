@@ -1,0 +1,10 @@
+# Flask Web Framework
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# MySQL Database Driver
+PyMySQL==1.1.2
+mysql-connector-python==8.2.0
+
+# Legacy requirements (no longer needed for Flask version)
+# tkcalendar==1.6.1

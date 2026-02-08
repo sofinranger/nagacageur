@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NagaCageur - Database Maintenance Tool</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center align-items-center min-vh-100">
+            <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+                
+                <!-- Main Card -->
+                <div class="card shadow-lg">
+                    <div class="card-header text-center text-white">
+                        <div class="logo-container">
+                            <img src="{{ url_for('static', filename='images/ngtc-logo.png') }}" alt="NGTC Logo" onerror="this.style.display='none'">
+                        </div>
+                        <h2 class="mb-0">
+                            <i class="bi bi-tools me-2"></i>
+                            NagaCageur
+                        </h2>
+                        <p class="mb-0 mt-2 opacity-90">Database Maintenance & Data Management Tool</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        
+                        <!-- Alert Messages -->
+                        <div id="alertContainer"></div>
+                        
+                        <!-- Tool Selection Tabs -->
+                        <ul class="nav nav-pills mb-4" id="toolTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tool1-tab" data-bs-toggle="pill" 
+                                        data-bs-target="#tool1" type="button" role="tab">
+                                    <i class="bi bi-tools"></i> Table Maintenance
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tool2-tab" data-bs-toggle="pill" 
+                                        data-bs-target="#tool2" type="button" role="tab">
+                                    <i class="bi bi-calendar-check"></i> TH Barang Saldo Checker
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tool3-tab" data-bs-toggle="pill" 
+                                        data-bs-target="#tool3" type="button" role="tab">
+                                    <i class="bi bi-shop"></i> Smart Audit Toko
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="toolTabContent">
+                            
+                            <!-- TOOL 1: Table Maintenance -->
+                            <div class="tab-pane fade show active" id="tool1" role="tabpanel">
+                        
+                        <!-- Connection Form -->
+                        <form id="maintenanceForm">
+                            
+                            <!-- Database Configuration Section -->
+                            <div class="mb-4">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-gear-fill text-orange"></i> 
+                                    Database Configuration
+                                </h5>
+                                
+                                <div class="row g-3">
+                                    <!-- IP/Host -->
+                                    <div class="col-md-6">
+                                        <label for="host" class="form-label fw-bold">
+                                            <i class="bi bi-hdd-network"></i> IP / Host
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="host" 
+                                               name="host" 
+                                               value="localhost" 
+                                               placeholder="localhost or 127.0.0.1"
+                                               required>
+                                    </div>
+                                    
+                                    <!-- User -->
+                                    <div class="col-md-6">
+                                        <label for="user" class="form-label fw-bold">
+                                            <i class="bi bi-person-fill"></i> USER
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="user" 
+                                               name="user" 
+                                               value="root" 
+                                               placeholder="Database username"
+                                               required>
+                                    </div>
+                                    
+                                    <!-- Password -->
+                                    <div class="col-md-6">
+                                        <label for="password" class="form-label fw-bold">
+                                            <i class="bi bi-key-fill"></i> PASSWORD
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="password" 
+                                                   class="form-control" 
+                                                   id="password" 
+                                                   name="password" 
+                                                   placeholder="Database password">
+                                            <button class="btn btn-outline-secondary" 
+                                                    type="button" 
+                                                    id="togglePassword">
+                                                <i class="bi bi-eye" id="passwordIcon"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Database -->
+                                    <div class="col-md-6">
+                                        <label for="database" class="form-label fw-bold">
+                                            <i class="bi bi-database-fill"></i> DATABASE
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="database" 
+                                               name="database" 
+                                               value="db_nagagold" 
+                                               placeholder="Database name"
+                                               required>
+                                    </div>
+                                    
+                                    <!-- Action Buttons -->
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold d-block">&nbsp;</label>
+                                        <button type="button" 
+                                                class="btn btn-outline-success w-100" 
+                                                id="testConnectionBtn">
+                                            <i class="bi bi-shield-check"></i> Test Connection
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold d-block">&nbsp;</label>
+                                        <button type="button" 
+                                                class="btn btn-outline-info w-100" 
+                                                id="loadTablesBtn">
+                                            <i class="bi bi-list-ul"></i> Load Tables
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Table Selection Section -->
+                            <div class="mb-4" id="tableSection" style="display: none;">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-table text-orange"></i> 
+                                    Select Tables to Check
+                                </h5>
+                                
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-2" id="selectAllBtn">
+                                        <i class="bi bi-check-all"></i> Select All
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllBtn">
+                                        <i class="bi bi-x-lg"></i> Deselect All
+                                    </button>
+                                </div>
+                                
+                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                    <table class="table table-sm table-hover">
+                                        <thead class="sticky-top" style="background: linear-gradient(135deg, #FF9A56 0%, #FF8C42 100%); color: white;">
+                                            <tr>
+                                                <th width="50">
+                                                    <input type="checkbox" class="form-check-input" id="checkAllCheckbox">
+                                                </th>
+                                                <th>Table Name</th>
+                                                <th class="text-end">Rows</th>
+                                                <th class="text-end">Size</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tableList">
+                                            <!-- Tables will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress Section -->
+                            <div class="mb-4" id="progressSection" style="display: none;">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-hourglass-split text-warning"></i> 
+                                    Maintenance Progress
+                                </h5>
+                                
+                                <!-- Progress Bar -->
+                                <div class="progress mb-3" style="height: 30px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" 
+                                         id="progressBar"
+                                         style="width: 0%"
+                                         aria-valuenow="0" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        <span class="fw-bold" id="progressText">0%</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Progress Counter -->
+                                <div class="text-center">
+                                    <span class="badge badge-orange fs-6">
+                                        <span id="currentCount">0</span> / <span id="totalCount">0</span>
+                                    </span>
+                                </div>
+                                
+                                <!-- Progress Message -->
+                                <div class="text-center mt-2">
+                                    <small class="text-muted" id="progressMessage">Ready to check tables...</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Results Section -->
+                            <div class="mb-4" id="resultsSection" style="display: none;">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-check-circle text-success"></i> 
+                                    Maintenance Results
+                                </h5>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead style="background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%); color: white;">
+                                            <tr>
+                                                <th>Table Name</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                                <th>Result</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="resultsList">
+                                            <!-- Results will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" 
+                                        class="btn btn-primary btn-lg" 
+                                        id="processBtn"
+                                        disabled>
+                                    <i class="bi bi-tools me-2"></i>
+                                    START MAINTENANCE
+                                </button>
+                                
+                                <button type="button" 
+                                        class="btn btn-success btn-lg" 
+                                        id="openFolderBtn"
+                                        style="display: none;">
+                                    <i class="bi bi-folder-fill me-2"></i>
+                                    OPEN LOG FOLDER
+                                </button>
+                            </div>
+                            
+                        </form>
+                        
+                            </div>
+                            <!-- END TOOL 1 -->
+                            
+                            <!-- TOOL 2: TH Barang Saldo Checker -->
+                            <div class="tab-pane fade" id="tool2" role="tabpanel">
+                                
+                                <!-- Connection Form Tool 2 -->
+                                <form id="barangSaldoForm">
+                                    
+                                    <!-- Database Configuration Section -->
+                                    <div class="mb-4">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="bi bi-gear-fill text-orange"></i> 
+                                            Database Configuration
+                                        </h5>
+                                        
+                                        <div class="row g-3">
+                                            <!-- IP/Host -->
+                                            <div class="col-md-6">
+                                                <label for="host2" class="form-label fw-bold">
+                                                    <i class="bi bi-hdd-network"></i> IP / Host
+                                                </label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="host2" 
+                                                       name="host" 
+                                                       value="localhost" 
+                                                       placeholder="localhost or 127.0.0.1"
+                                                       required>
+                                            </div>
+                                            
+                                            <!-- User -->
+                                            <div class="col-md-6">
+                                                <label for="user2" class="form-label fw-bold">
+                                                    <i class="bi bi-person-fill"></i> USER
+                                                </label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="user2" 
+                                                       name="user" 
+                                                       value="root" 
+                                                       placeholder="Database username"
+                                                       required>
+                                            </div>
+                                            
+                                            <!-- Password -->
+                                            <div class="col-md-6">
+                                                <label for="password2" class="form-label fw-bold">
+                                                    <i class="bi bi-key-fill"></i> PASSWORD
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="password" 
+                                                           class="form-control" 
+                                                           id="password2" 
+                                                           name="password" 
+                                                           placeholder="Database password">
+                                                    <button class="btn btn-outline-secondary" 
+                                                            type="button" 
+                                                            id="togglePassword2">
+                                                        <i class="bi bi-eye" id="passwordIcon2"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Database -->
+                                            <div class="col-md-6">
+                                                <label for="database2" class="form-label fw-bold">
+                                                    <i class="bi bi-database-fill"></i> DATABASE
+                                                </label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="database2" 
+                                                       name="database" 
+                                                       value="db_nagagold" 
+                                                       placeholder="Database name"
+                                                       required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Date Selection Section -->
+                                    <div class="mb-4">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="bi bi-calendar-date text-orange"></i> 
+                                            Select Month & Year
+                                        </h5>
+                                        
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label for="checkDate" class="form-label fw-bold">
+                                                    <i class="bi bi-calendar3"></i> Period (Last Month Only)
+                                                </label>
+                                                <input type="month" 
+                                                       class="form-control" 
+                                                       id="checkDate" 
+                                                       name="checkDate" 
+                                                       required
+                                                       readonly>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold d-block">&nbsp;</label>
+                                                <button type="button" 
+                                                        class="btn btn-primary w-100" 
+                                                        id="checkSaldoBtn">
+                                                    <i class="bi bi-search"></i> CHECK SALDO DATA
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Check Results Section -->
+                                    <div class="mb-4" id="checkResultsSection" style="display: none;">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="bi bi-info-circle text-orange"></i> 
+                                            Check Results
+                                        </h5>
+                                        
+                                        <div class="alert alert-info" id="checkResultsMessage">
+                                            <!-- Check results will be displayed here -->
+                                        </div>
+                                        
+                                        <!-- Fixing Button (only shown when needed) -->
+                                        <div id="fixingButtonContainer" style="display: none;">
+                                            <div class="d-grid gap-2">
+                                                <button type="button" 
+                                                        class="btn btn-warning btn-lg" 
+                                                        id="startFixingBtn">
+                                                    <i class="bi bi-wrench-adjustable me-2"></i>
+                                                    START FIXING - Move Data to Monthly Table
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="alert alert-warning mt-3" role="alert">
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                                <strong>Warning:</strong> This will move data from <code>th_barang_saldo</code> to <code id="targetTableName"></code> 
+                                                and delete the original data. This action cannot be undone!
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Fix Progress Section -->
+                                    <div class="mb-4" id="fixProgressSection" style="display: none;">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="bi bi-hourglass-split text-warning"></i> 
+                                            Fixing Progress
+                                        </h5>
+                                        
+                                        <div class="alert alert-info" id="fixProgressMessage">
+                                            Processing...
+                                        </div>
+                                    </div>
+                                    
+                                </form>
+                                
+                            </div>
+                            <!-- END TOOL 2 -->
+                            
+                            <!-- TOOL 3: Smart Audit Toko -->
+                            <div class="tab-pane fade" id="tool3" role="tabpanel">
+                                
+                                <!-- Connection Form Tool 3 -->
+                                <form id="smartAuditForm">
+                                    
+                                    <!-- Database Configuration Section -->
+                                    <div class="mb-4">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="bi bi-gear-fill text-orange"></i> 
+                                            Database Configuration
+                                        </h5>
+                                        
+                                        <div class="row g-3">
+                                            <!-- IP/Host -->
+                                            <div class="col-md-6">
+                                                <label for="host3" class="form-label fw-bold">
+                                                    <i class="bi bi-hdd-network"></i> IP / Host
+                                                </label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="host3" 
+                                                       name="host" 
+                                                       value="localhost" 
+                                                       placeholder="localhost or 127.0.0.1"
+                                                       required>
+                                            </div>
+                                            
+                                            <!-- User -->
+                                            <div class="col-md-6">
+                                                <label for="user3" class="form-label fw-bold">
+                                                    <i class="bi bi-person-fill"></i> USER
+                                                </label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="user3" 
+                                                       name="user" 
+                                                       value="root" 
+                                                       placeholder="Database username"
+                                                       required>
+                                            </div>
+                                            
+                                            <!-- Password -->
+                                            <div class="col-md-6">
+                                                <label for="password3" class="form-label fw-bold">
+                                                    <i class="bi bi-key-fill"></i> PASSWORD
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="password" 
+                                                           class="form-control" 
+                                                           id="password3" 
+                                                           name="password" 
+                                                           placeholder="Database password">
+                                                    <button class="btn btn-outline-secondary" 
+                                                            type="button" 
+                                                            id="togglePassword3">
+                                                        <i class="bi bi-eye" id="passwordIcon3"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Database -->
+                                            <div class="col-md-6">
+                                                <label for="database3" class="form-label fw-bold">
+                                                    <i class="bi bi-database-fill"></i> DATABASE
+                                                </label>
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       id="database3" 
+                                                       name="database" 
+                                                       value="db_nagagold" 
+                                                       placeholder="Database name"
+                                                       required>
+                                            </div>
+                                            
+                                            <!-- Start Audit Button -->
+                                            <div class="col-12">
+                                                <button type="button" 
+                                                        class="btn btn-primary btn-lg w-100" 
+                                                        id="startAuditBtn">
+                                                    <i class="bi bi-play-circle me-2"></i> START AUDIT TOKO
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Audit Progress Section -->
+                                    <div class="mb-4" id="auditProgressSection" style="display: none;">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="bi bi-hourglass-split text-orange"></i> 
+                                            Audit Progress
+                                        </h5>
+                                        
+                                        <div class="progress mb-3" style="height: 30px;">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                 role="progressbar" 
+                                                 id="auditProgressBar"
+                                                 style="width: 0%"
+                                                 aria-valuenow="0" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                <span class="fw-bold" id="auditProgressText">0%</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="alert alert-info" id="auditProgressMessage">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            <span id="auditProgressStatus">Initializing audit...</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Audit Results Section -->
+                                    <div class="mb-4" id="auditResultsSection" style="display: none;">
+                                        <h5 class="border-bottom pb-2 mb-3">
+                                            <i class="bi bi-clipboard-check text-success"></i> 
+                                            Audit Results
+                                        </h5>
+                                        
+                                        <!-- Summary Cards -->
+                                        <div class="row g-3 mb-4">
+                                            <div class="col-md-3">
+                                                <div class="card text-center">
+                                                    <div class="card-body">
+                                                        <h6 class="text-muted mb-2">Total tm_barang</h6>
+                                                        <h3 class="mb-0 text-primary" id="summaryTmBarang">0</h3>
+                                                        <small class="text-muted">TOKO, stock > 0</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card text-center">
+                                                    <div class="card-body">
+                                                        <h6 class="text-muted mb-2">Match</h6>
+                                                        <h3 class="mb-0 text-success" id="summaryMatchTmToTt">0</h3>
+                                                        <small class="text-muted">Found in tt_barang_saldo</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card text-center">
+                                                    <div class="card-body">
+                                                        <h6 class="text-muted mb-2">Not Found</h6>
+                                                        <h3 class="mb-0 text-danger" id="summaryNotFound">0</h3>
+                                                        <small class="text-muted">Missing in tt_barang_saldo</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card text-center">
+                                                    <div class="card-body">
+                                                        <h6 class="text-muted mb-2">Duplicate</h6>
+                                                        <h3 class="mb-0 text-warning" id="summaryDuplicate">0</h3>
+                                                        <small class="text-muted">Multiple Records</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Detailed Results Table -->
+                                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                                            <table class="table table-sm table-hover">
+                                                <thead class="sticky-top" style="background: linear-gradient(135deg, #FF9A56 0%, #FF8C42 100%); color: white;">
+                                                    <tr>
+                                                        <th width="40">#</th>
+                                                        <th>Kode Barang</th>
+                                                        <th>Kode Lokasi</th>
+                                                        <th>Count tt_saldo</th>
+                                                        <th>Issue</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="auditResultsTableBody">
+                                                    <!-- Issues will be loaded here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                </form>
+                                
+                            </div>
+                            <!-- END TOOL 3 -->
+                            
+                        </div>
+                        <!-- END Tab Content -->
+                        
+                    </div>
+                    <!-- END Card Body -->
+                    
+                    <!-- Footer -->
+                    <div class="card-footer text-center py-3">
+                        <small class="d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-info-circle"></i>
+                            <span class="text-muted">NagaCageur v2.1.0 - Database Maintenance & Data Management Tool</span>
+                        </small>
+                        <small class="text-muted d-block mt-1">
+                            © 2026 Nagatech Sistem Integrator
+                        </small>
+                    </div>
+                    
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirm Audit Modal -->
+    <div class="modal fade" id="confirmAuditModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #FF9A56 0%, #FF8C42 100%);">
+                    <h5 class="modal-title">
+                        <i class="bi bi-shop me-2"></i>
+                        Start Smart Audit Toko?
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-3"><strong>This will check tm_barang vs tt_barang_saldo:</strong></p>
+                    <ul class="list-unstyled mb-3">
+                        <li class="mb-2">
+                            <i class="bi bi-1-circle-fill text-danger me-2"></i>
+                            <strong>Missing records</strong> (NOT_FOUND)
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-2-circle-fill text-warning me-2"></i>
+                            <strong>Duplicate records</strong> (DUPLICATE)
+                        </li>
+                    </ul>
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>This may take a while depending on data size.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirmAuditBtn">
+                        <i class="bi bi-check-circle me-2"></i>OK, Start Audit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alert Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" id="alertModalHeader">
+                    <h5 class="modal-title" id="alertModalTitle">
+                        <i class="bi" id="alertModalIcon"></i>
+                        <span id="alertModalTitleText">Message</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="alertModalBody">
+                    <!-- Message content will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
