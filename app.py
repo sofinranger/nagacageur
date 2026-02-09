@@ -1420,7 +1420,7 @@ def open_browser():
 def main():
     """Main entry point"""
     print("=" * 80)
-    print("NAGACAGEUR - DATABASE MAINTENANCE & DATA MANAGEMENT TOOL")
+    print("NAGACHECK - DATABASE MAINTENANCE & DATA MANAGEMENT TOOL")
     print("=" * 80)
     print("Starting Flask server on http://localhost:5000")
     print("Browser will open automatically in 2 seconds...")

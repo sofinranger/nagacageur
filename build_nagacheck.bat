@@ -1,23 +1,23 @@
 @echo off
 echo ================================
-echo Building NagaCageur - Database Maintenance Tool
+echo Building nagacheck - Database Maintenance Tool
 echo ================================
 echo.
 
 echo Cleaning previous build...
 if exist build rmdir /s /q build
-if exist dist\NagaCageur.exe del /q dist\NagaCageur.exe
+if exist dist\nagacheck.exe del /q dist\nagacheck.exe
 
 echo.
 echo Building executable with PyInstaller...
-py -m PyInstaller --clean NagaCageur.spec
+py -m PyInstaller --clean nagacheck.spec
 
 echo.
-if exist dist\NagaCageur.exe (
+if exist dist\nagacheck.exe (
     echo ================================
     echo Build Successful!
     echo ================================
-    echo Executable location: dist\NagaCageur.exe
+    echo Executable location: dist\nagacheck.exe
     echo.
     echo File ready for distribution!
     echo.

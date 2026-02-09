@@ -1,10 +1,10 @@
-# NagaCageur - Database Maintenance Tool
+# NagaCheck - Database Maintenance Tool
 
 Aplikasi Python untuk **Database Maintenance**: Check, Repair, dan Optimize tabel MySQL, dengan **Web Interface** modern menggunakan Flask.
 
 ## Status Project
 
-✅ **NAGACAGEUR v2.0.0** - Professional Database Maintenance Tool
+✅ **NAGACHECK v2.0.0** - Professional Database Maintenance Tool
 
 ### Design & Branding
 - 🎨 **Color Scheme**: Soft Orange, Warm Gray, White (NGTC Corporate Colors)
@@ -15,7 +15,7 @@ Aplikasi Python untuk **Database Maintenance**: Check, Repair, dan Optimize tabe
 ### Versi Terkini
 - **Versi**: 2.0.0 (Flask Web Interface)
 - **Build Date**: February 2026
-- **Executable**: `dist/NagaCageur.exe` (Windows standalone dengan auto-open browser)
+- **Executable**: `dist/nagacheck.exe` (Windows standalone dengan auto-open browser)
 - **Platform**: Cross-platform (Windows, Linux, macOS)
 
 ### Database Support
@@ -110,7 +110,7 @@ Untuk menampilkan logo Nagatech Sistem Integrator di header aplikasi:
 ## Instalasi
 
 ### Opsi 1: Executable / EXE (Recommended)
-1. Download `NagaCageur.exe` dari folder `dist/`
+1. Download `nagacheck.exe` dari folder `dist/`
 2. Double-click untuk menjalankan
 3. **Browser akan otomatis terbuka** ke http://localhost:5000
 4. Tidak perlu install Python atau dependencies
@@ -226,20 +226,20 @@ Tables optimized: 3
 
 ## Build Executable
 
-### Build NagaCageur v2.0
+### Build NagaCheck v2.0
 Untuk membuat file .exe:
 ```bash
-py -m PyInstaller --clean NagaCageur.spec
+py -m PyInstaller --clean nagacheck.spec
 ```
 
 Atau gunakan batch file:
 ```bash
-build_nagacageur.bat
+build_nagacheck.bat
 ```
 
 ### Output
 - Executable akan tersimpan di folder `dist/`
-- File `NagaCageur.exe` siap didistribusikan
+- File `nagacheck.exe` siap didistribusikan
 - Size: ~20-25 MB (include Flask + PyMySQL + templates + static files)
 
 ## Troubleshooting
@@ -300,9 +300,9 @@ Jangan close console window! Flask server berjalan di console:
 ## Struktur Project
 
 ```
-NagaCageur/
+NagaCheck/
 ├── dist/
-│   └── NagaCageur.exe             # Executable siap pakai (CURRENT)
+│   └── nagacheck.exe             # Executable siap pakai (CURRENT)
 ├── data/                          # Output folder (auto-created)
 │   └── maintenance_log.txt        # Log hasil check/repair/optimize
 ├── templates/                     # Flask HTML templates
@@ -316,8 +316,8 @@ NagaCageur/
 │       ├── ngtc-logo.png          # NGTC Logo (add your logo here)
 │       └── README_LOGO.md         # Logo instructions
 ├── app.py                         # Flask application (MAIN)
-├── NagaCageur.spec                # PyInstaller spec
-├── build_nagacageur.bat           # Build script
+├── nagacheck.spec                # PyInstaller spec
+├── build_nagacheck.bat           # Build script
 ├── requirements.txt               # Python dependencies
 ├── .gitignore                     # Git ignore rules
 └── README.md                      # Dokumentasi
@@ -440,10 +440,10 @@ Aplikasi ini dibuat untuk keperluan database maintenance.
 
 ```bash
 # 1. Download & Extract
-# Download NagaCageur.exe
+# Download nagacheck.exe
 
 # 2. Run
-# Double-click NagaCageur.exe
+# Double-click nagacheck.exe
 
 # 3. Browser akan auto-open
 
